@@ -17,12 +17,15 @@ app.get("/expenses", (req, res) => {
 });
 
 app.post("/expenses", (req, res) => {
-  const { description, amount } = req.body;
+  const { name, amount, category, date, icon } = req.body;
 
   const newExpense = {
     id: Date.now(),
-    description,
+    name,
     amount: Number(amount),
+    category,
+    date,
+    icon,
   };
 
   expenses.push(newExpense);
