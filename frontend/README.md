@@ -1,16 +1,106 @@
-# React + Vite
+# Expense Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack expense management application built with React, Vite, Node.js, Express, and MongoDB.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* Add expenses
+* Edit expenses
+* Delete expenses
+* Categorize expenses
+* Search expenses
+* Filter expenses by category
+* Sort expenses by date and amount
+* Track monthly income
+* Track monthly budget
+* View remaining balance
+* View spending statistics
+* View category-wise expense breakdown
+* View spending chart
+* Dark and light mode
+* Export expenses as CSV
+* Store expenses using MongoDB
 
-## React Compiler
+## Technologies Used
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
 
-## Expanding the ESLint configuration
+* React
+* Vite
+* JavaScript
+* CSS
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend
+
+* Node.js
+* Express.js
+* CORS
+
+### Database
+
+* MongoDB
+
+## Project Structure
+
+```text
+Expense Tracker/
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   └── main.jsx
+│   └── package.json
+│
+└── backend/
+    ├── server.js
+    ├── package.json
+    └── .env
+```
+
+## How to Run
+
+### 1. Start the Backend
+
+Open a terminal and run:
+
+```bash
+cd "Expense Tracker/backend"
+npm install
+node server.js
+```
+
+The backend runs on:
+
+```text
+http://localhost:5000
+```
+
+### 2. Start the Frontend
+
+Open another terminal and run:
+
+```bash
+cd "Expense Tracker/frontend"
+npm install
+npm run dev
+```
+
+Then open the Local URL shown by Vite in your browser.
+
+## Database
+
+The application uses MongoDB to store expense data.
+
+Make sure your MongoDB connection string is configured in the backend `.env` file.
+
+## Future Improvements
+
+* User login and signup
+* User authentication
+* User-specific expense management
+* Online deployment
+* Additional reports and analytics
+
+## Author
+
+Expense Tracker Project

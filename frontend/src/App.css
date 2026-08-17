@@ -808,3 +808,62 @@ footer {
     width: 32px;
   }
 }
+/* EXTRA SMALL MOBILE */
+@media (max-width: 400px) {
+  .app {
+    padding: 18px 10px;
+  }
+
+  .box {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .card h2 {
+    font-size: 24px;
+  }
+
+  .expense-item {
+    gap: 8px;
+  }
+
+  .expense-left {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .expense-left strong {
+    font-size: 13px;
+  }
+
+  .expense-right {
+    gap: 6px;
+  }
+
+  .expense-right strong {
+    font-size: 12px;
+  }
+
+  .chart {
+    height: 220px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .chart-bar-area {
+    width: 28px;
+    height: 140px;
+  }
+}

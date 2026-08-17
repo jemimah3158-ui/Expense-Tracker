@@ -74,7 +74,30 @@ function App() {
     Other: "✨",
   };
 
-  /* Save expenses */
+  // Load expenses from MongoDB
+  useEffect(() => {
+    const loadExpenses = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/expenses");
+
+        if (!response.ok) {
+          throw new Error("Failed to load expenses");
+        }
+
+        const data = await response.json();
+
+        if (data.length > 0) {
+          setExpenses(data);
+        }
+      } catch (error) {
+        console.error("Error loading expenses:", error);
+      }
+    };
+
+    loadExpenses();
+  }, []);
+
+  // Save expenses locally as backup
   useEffect(() => {
     localStorage.setItem(
       "expenseTrackerExpenses",
@@ -82,7 +105,7 @@ function App() {
     );
   }, [expenses]);
 
-  /* Save income */
+  // Save income
   useEffect(() => {
     localStorage.setItem(
       "expenseTrackerIncome",
@@ -90,7 +113,7 @@ function App() {
     );
   }, [income]);
 
-  /* Save budget */
+  // Save budget
   useEffect(() => {
     localStorage.setItem(
       "expenseTrackerBudget",
@@ -98,16 +121,16 @@ function App() {
     );
   }, [budget]);
 
-  /* Total expense */
+  // Total expense
   const totalExpense = expenses.reduce(
     (total, expense) => total + Number(expense.amount),
     0
   );
 
-  /* Balance */
+  // Balance
   const balance = income - totalExpense;
 
-  /* Budget */
+  // Budget
   const budgetRemaining = budget - totalExpense;
 
   const budgetPercentage =
@@ -115,7 +138,7 @@ function App() {
       ? Math.min((totalExpense / budget) * 100, 100)
       : 0;
 
-  /* Category totals */
+  // Category totals
   const categoryTotals = expenses.reduce((acc, expense) => {
     const key = expense.category || expense.name;
 
@@ -124,20 +147,22 @@ function App() {
     return acc;
   }, {});
 
-  /* Highest expense */
+  // Highest expense
   const highestExpense =
     expenses.length > 0
-      ? Math.max(...expenses.map((expense) => Number(expense.amount)))
+      ? Math.max(
+          ...expenses.map((expense) => Number(expense.amount))
+        )
       : 0;
 
-  /* Average expense */
+  // Average expense
   const averageExpense =
     expenses.length > 0
       ? totalExpense / expenses.length
       : 0;
 
-  /* Search + filter + sort */
-  const filteredExpenses = expenses
+  // Search + filter + sort
+  const filteredExpenses = [...expenses]
     .filter((expense) =>
       expense.name
         .toLowerCase()
@@ -168,7 +193,7 @@ function App() {
       return 0;
     });
 
-  /* Add / Edit Expense */
+  // Add / Edit Expense
   const addExpense = async (e) => {
     e.preventDefault();
 
@@ -177,59 +202,116 @@ function App() {
       return;
     }
 
-    if (editingId) {
-      setExpenses(
-        expenses.map((expense) =>
-          expense.id === editingId
-            ? {
-                ...expense,
-                name,
-                amount: Number(amount),
-                category,
-                date,
-                icon: categories[category],
-              }
-            : expense
-        )
-      );
+    try {
+      if (editingId) {
+        // UPDATE
+        const response = await fetch(
+          `http://localhost:5000/expenses/${editingId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name,
+              amount: Number(amount),
+              category,
+              date,
+              icon: categories[category],
+            }),
+          }
+        );
 
-      setEditingId(null);
-    } else {
-      const newExpense = {
-        id: Date.now(),
-        name,
-        amount: Number(amount),
-        category,
-        date,
-        icon: categories[category],
-      };
+        if (!response.ok) {
+          throw new Error("Failed to update expense");
+        }
 
-      setExpenses([...expenses, newExpense]);
+        const updatedExpense = await response.json();
+
+        setExpenses((prev) =>
+          prev.map((expense) =>
+            expense._id === editingId ||
+            expense.id === editingId
+              ? updatedExpense
+              : expense
+          )
+        );
+
+        setEditingId(null);
+      } else {
+        // ADD
+        const response = await fetch(
+          "http://localhost:5000/expenses",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name,
+              amount: Number(amount),
+              category,
+              date,
+              icon: categories[category],
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to add expense");
+        }
+
+        const newExpense = await response.json();
+
+        setExpenses((prev) => [newExpense, ...prev]);
+      }
+
+      setName("");
+      setAmount("");
+      setCategory("Food");
+      setDate("2026-08-15");
+    } catch (error) {
+      console.error("Expense error:", error);
+      alert("Could not connect to backend");
     }
-
-    setName("");
-    setAmount("");
-    setCategory("Food");
-    setDate("2026-08-15");
   };
 
-  /* Delete */
-  const deleteExpense = (id) => {
-    setExpenses(
-      expenses.filter((expense) => expense.id !== id)
-    );
-  };
-
-  /* Edit */
+  // Edit expense
   const editExpense = (expense) => {
-    setEditingId(expense.id);
+    setEditingId(expense._id || expense.id);
     setName(expense.name);
     setAmount(expense.amount);
     setCategory(expense.category || "Other");
     setDate(expense.date || "2026-08-15");
   };
 
-  /* Income */
+  // Delete expense
+  const deleteExpense = async (id) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/expenses/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete expense");
+      }
+
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter(
+          (expense) =>
+            expense._id !== id && expense.id !== id
+        )
+      );
+    } catch (error) {
+      console.error("Error deleting expense:", error);
+      alert("Could not delete expense");
+    }
+  };
+
+  // Income
   const saveIncome = (e) => {
     e.preventDefault();
 
@@ -242,7 +324,7 @@ function App() {
     setIncomeInput("");
   };
 
-  /* Budget */
+  // Budget
   const saveBudget = (e) => {
     e.preventDefault();
 
@@ -255,7 +337,7 @@ function App() {
     setBudgetInput("");
   };
 
-  /* CSV Export */
+  // CSV Export
   const exportCSV = () => {
     const headers = [
       "Name",
@@ -539,65 +621,77 @@ function App() {
                   No expenses found.
                 </p>
               ) : (
-                filteredExpenses.map((expense) => (
+                filteredExpenses.map((expense) => {
 
-                  <div
-                    className="expense-item"
-                    key={expense.id}
-                  >
+                  const expenseId =
+                    expense._id || expense.id;
 
-                    <div className="expense-left">
+                  return (
+                    <div
+                      className="expense-item"
+                      key={expenseId}
+                    >
 
-                      <div className="expense-icon">
-                        {expense.icon}
+                      <div className="expense-left">
+
+                        <div className="expense-icon">
+                          {expense.icon ||
+                            categories[
+                              expense.category
+                            ] ||
+                            "✨"}
+                        </div>
+
+                        <div>
+                          <strong>
+                            {expense.name}
+                          </strong>
+
+                          <p>
+                            {expense.category ||
+                              "Expense"}
+                            {" • "}
+                            {expense.date ||
+                              "No date"}
+                          </p>
+                        </div>
+
                       </div>
 
-                      <div>
+                      <div className="expense-right">
+
                         <strong>
-                          {expense.name}
+                          ₹
+                          {Number(
+                            expense.amount
+                          ).toLocaleString()}
                         </strong>
 
-                        <p>
-                          {expense.category || "Expense"}
-                          {" • "}
-                          {expense.date || "No date"}
-                        </p>
+                        <button
+                          className="edit-button"
+                          type="button"
+                          onClick={() =>
+                            editExpense(expense)
+                          }
+                        >
+                          ✎
+                        </button>
+
+                        <button
+                          className="delete-button"
+                          type="button"
+                          onClick={() =>
+                            deleteExpense(expenseId)
+                          }
+                        >
+                          ×
+                        </button>
+
                       </div>
 
                     </div>
-
-                    <div className="expense-right">
-
-                      <strong>
-                        ₹
-                        {Number(
-                          expense.amount
-                        ).toLocaleString()}
-                      </strong>
-
-                      <button
-                        className="edit-button"
-                        onClick={() =>
-                          editExpense(expense)
-                        }
-                      >
-                        ✎
-                      </button>
-
-                      <button
-                        className="delete-button"
-                        onClick={() =>
-                          deleteExpense(expense.id)
-                        }
-                      >
-                        ×
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                ))
+                  );
+                })
               )}
 
             </div>
@@ -622,44 +716,51 @@ function App() {
           <div className="category-list">
 
             {Object.entries(categoryTotals).map(
-              ([categoryName, total]) => (
+              ([categoryName, total]) => {
 
-                <div
-                  className="category-row"
-                  key={categoryName}
-                >
+                const percentage =
+                  totalExpense > 0
+                    ? Math.min(
+                        (total / totalExpense) * 100,
+                        100
+                      )
+                    : 0;
 
-                  <div>
+                return (
+                  <div
+                    className="category-row"
+                    key={categoryName}
+                  >
 
-                    <strong>
-                      {categories[categoryName] ||
-                        "✨"}{" "}
-                      {categoryName}
-                    </strong>
+                    <div>
 
-                    <div className="category-line">
+                      <strong>
+                        {categories[
+                          categoryName
+                        ] || "✨"}{" "}
+                        {categoryName}
+                      </strong>
 
-                      <div
-                        className="category-progress"
-                        style={{
-                          width: `${Math.min(
-                            (total / totalExpense) * 100,
-                            100
-                          )}%`,
-                        }}
-                      ></div>
+                      <div className="category-line">
+
+                        <div
+                          className="category-progress"
+                          style={{
+                            width: `${percentage}%`,
+                          }}
+                        ></div>
+
+                      </div>
 
                     </div>
 
+                    <span>
+                      ₹{total.toLocaleString()}
+                    </span>
+
                   </div>
-
-                  <span>
-                    ₹{total.toLocaleString()}
-                  </span>
-
-                </div>
-
-              )
+                );
+              }
             )}
 
           </div>
@@ -736,8 +837,6 @@ function App() {
 
           </div>
 
-          {/* BUDGET WARNING */}
-
           {budgetRemaining < 0 && (
             <div className="budget-warning">
               ⚠️ You have exceeded your monthly budget.
@@ -754,7 +853,7 @@ function App() {
 
         </section>
 
-        {/* MONTHLY SUMMARY — KEPT SAME */}
+        {/* MONTHLY SUMMARY */}
 
         <section className="box monthly-box">
 
@@ -765,23 +864,31 @@ function App() {
             </div>
 
             <strong>
-              {Math.round(
-                (totalExpense / income) * 100
-              )}
+              {income > 0
+                ? Math.round(
+                    (totalExpense / income) * 100
+                  )
+                : 0}
               %
             </strong>
           </div>
 
           <div className="progress">
+
             <div
               className="progress-value"
               style={{
-                width: `${Math.min(
-                  (totalExpense / income) * 100,
-                  100
-                )}%`,
+                width: `${
+                  income > 0
+                    ? Math.min(
+                        (totalExpense / income) * 100,
+                        100
+                      )
+                    : 0
+                }%`,
               }}
             ></div>
+
           </div>
 
           <p>
@@ -797,10 +904,12 @@ function App() {
         <section className="box extra-box">
 
           <div className="section-heading">
+
             <div>
               <span>INCOME</span>
               <h2>Update Monthly Income</h2>
             </div>
+
           </div>
 
           <form
@@ -857,7 +966,8 @@ function App() {
             <div className="stat-item">
               <span>Average Expense</span>
               <strong>
-                ₹{Math.round(
+                ₹
+                {Math.round(
                   averageExpense
                 ).toLocaleString()}
               </strong>
@@ -922,8 +1032,9 @@ function App() {
                     </div>
 
                     <span>
-                      {categories[categoryName] ||
-                        "✨"}
+                      {categories[
+                        categoryName
+                      ] || "✨"}
                     </span>
 
                     <small>
