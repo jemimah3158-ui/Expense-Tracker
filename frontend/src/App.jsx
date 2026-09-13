@@ -3,7 +3,11 @@ import "./App.css";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-
+  const [showAuth, setShowAuth] = useState(true);
+  const [authMode, setAuthMode] = useState("login");
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
   const defaultExpenses = [
     {
       id: 1,
@@ -337,7 +341,7 @@ function App() {
     setBudgetInput("");
   };
 
-  // CSV Export
+    // CSV Export
   const exportCSV = () => {
     const headers = [
       "Name",
@@ -373,6 +377,130 @@ function App() {
 
     URL.revokeObjectURL(url);
   };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+
+    if (!authEmail || !authPassword) {
+      alert("Please enter email and password");
+      return;
+    }
+
+    if (authMode === "register" && !authName) {
+      alert("Please enter your name");
+      return;
+    }
+
+    try {
+      const endpoint =
+        authMode === "register"
+          ? "https://expense-tracker-sw5p.onrender.com/register"
+          : "https://expense-tracker-sw5p.onrender.com/login";
+
+      const body =
+        authMode === "register"
+          ? {
+              name: authName,
+              email: authEmail,
+              password: authPassword,
+            }
+          : {
+              email: authEmail,
+              password: authPassword,
+            };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Authentication failed");
+        return;
+      }
+
+      if (authMode === "login") {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+
+        setShowAuth(false);
+        alert(`Welcome, ${data.user.name}!`);
+      } else {
+        alert("Registration successful! Please login.");
+
+        setAuthMode("login");
+        setAuthName("");
+        setAuthPassword("");
+      }
+
+      setAuthEmail("");
+    } catch (error) {
+      console.error("Authentication error:", error);
+      alert("Could not connect to server");
+    }
+  };
+
+  if (showAuth) {
+    return (
+      <div className="auth-page">
+        <div className="auth-card">
+          <h1>💰 Expense Tracker</h1>
+
+          <p>
+            {authMode === "login"
+              ? "Welcome back! Login to continue."
+              : "Create your account"}
+          </p>
+
+          <form onSubmit={handleAuth}>
+            {authMode === "register" && (
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={authName}
+                onChange={(e) => setAuthName(e.target.value)}
+              />
+            )}
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={authEmail}
+              onChange={(e) => setAuthEmail(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={authPassword}
+              onChange={(e) => setAuthPassword(e.target.value)}
+            />
+
+            <button type="submit">
+              {authMode === "login" ? "Login" : "Register"}
+            </button>
+          </form>
+
+          <button
+            type="button"
+            className="auth-switch"
+            onClick={() =>
+              setAuthMode(authMode === "login" ? "register" : "login")
+            }
+          >
+            {authMode === "login"
+              ? "Don't have an account? Register"
+              : "Already have an account? Login"}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={darkMode ? "app dark" : "app"}>
