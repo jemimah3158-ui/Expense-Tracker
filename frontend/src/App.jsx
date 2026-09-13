@@ -78,7 +78,7 @@ function App() {
   useEffect(() => {
     const loadExpenses = async () => {
       try {
-        const response = await fetch("http://localhost:5000/expenses");
+        const response = await fetch("https://expense-tracker-sw5p.onrender.com/expenses");
 
         if (!response.ok) {
           throw new Error("Failed to load expenses");
@@ -206,7 +206,7 @@ function App() {
       if (editingId) {
         // UPDATE
         const response = await fetch(
-          `http://localhost:5000/expenses/${editingId}`,
+          `https://expense-tracker-sw5p.onrender.com/expenses/${editingId}`,
           {
             method: "PUT",
             headers: {
@@ -241,7 +241,7 @@ function App() {
       } else {
         // ADD
         const response = await fetch(
-          "http://localhost:5000/expenses",
+          "https://expense-tracker-sw5p.onrender.com/expenses",
           {
             method: "POST",
             headers: {
@@ -289,7 +289,7 @@ function App() {
   const deleteExpense = async (id) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/expenses/${id}`,
+        `https://expense-tracker-sw5p.onrender.com/expenses/${id}`,
         {
           method: "DELETE",
         }
