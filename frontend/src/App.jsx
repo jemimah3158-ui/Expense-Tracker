@@ -622,9 +622,6 @@ if (showProfile) {
   🚪 Logout
 </button>
 
-<button className="logout-button" onClick={handleLogout}>
-  Logout
-</button>
           <button
             className="theme-button"
             onClick={() => setDarkMode(!darkMode)}
