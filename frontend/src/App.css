@@ -935,3 +935,93 @@ footer {
   font-size: 14px;
   cursor: pointer;
 }
+/* Profile & Logout Buttons */
+.profile-button,
+.logout-button {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: 0.2s ease;
+}
+
+.profile-button {
+  background: #6366f1;
+  color: white;
+}
+
+.logout-button {
+  background: #ef4444;
+  color: white;
+}
+
+.profile-button:hover,
+.logout-button:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
+/* Profile Modal */
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 30px;
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.profile-card h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.profile-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.profile-card input {
+  padding: 13px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+}
+
+.profile-card input:focus {
+  border-color: #6366f1;
+}
+
+.profile-card form button {
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.profile-card form button[type="submit"] {
+  background: #6366f1;
+  color: white;
+}
+
+.profile-cancel {
+  background: #e5e7eb;
+  color: #111827;
+}

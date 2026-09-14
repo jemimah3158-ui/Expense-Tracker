@@ -8,6 +8,9 @@ function App() {
   const [authName, setAuthName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
   const defaultExpenses = [
     {
       id: 1,
@@ -444,7 +447,86 @@ function App() {
       alert("Could not connect to server");
     }
   };
+  const handleProfileUpdate = async (e) => {
+  e.preventDefault();
 
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const response = await fetch(
+      "https://expense-tracker-sw5p.onrender.com/profile",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: profileName,
+          email: profileEmail,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message || "Profile update failed");
+      return;
+    }
+
+    localStorage.setItem("loggedInUser", JSON.stringify(data.user));
+    setShowProfile(false);
+    alert("Profile updated successfully!");
+  } catch (error) {
+    console.error("Profile update error:", error);
+    alert("Could not connect to server");
+  }
+};
+  const handleLogout = () => {
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("loggedInUser");
+
+  setShowAuth(true);
+  setAuthMode("login");
+};
+if (showProfile) {
+  return (
+    <div className="profile-modal">
+      <div className="profile-card">
+        <h2>👤 My Profile</h2>
+
+        <form onSubmit={handleProfileUpdate}>
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={profileName}
+            onChange={(e) => setProfileName(e.target.value)}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={profileEmail}
+            onChange={(e) => setProfileEmail(e.target.value)}
+          />
+
+          <button type="submit">
+            Save Changes
+          </button>
+
+          <button
+            type="button"
+            className="profile-cancel"
+            onClick={() => setShowProfile(false)}
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
   if (showAuth) {
     return (
       <div className="auth-page">
@@ -515,10 +597,34 @@ function App() {
             <h1>Expense Tracker</h1>
 
             <p className="subtitle">
-              A simple way to stay on top of your spending.
-            </p>
-          </div>
+  A simple way to stay on top of your spending.
+</p>
+</div>
 
+<button
+  className="profile-button"
+  onClick={() => {
+    const user = JSON.parse(
+      localStorage.getItem("loggedInUser") || "{}"
+    );
+    setProfileName(user.name || "");
+    setProfileEmail(user.email || "");
+    setShowProfile(true);
+  }}
+>
+  👤 Profile
+</button>
+
+<button
+  className="logout-button"
+  onClick={handleLogout}
+>
+  🚪 Logout
+</button>
+
+<button className="logout-button" onClick={handleLogout}>
+  Logout
+</button>
           <button
             className="theme-button"
             onClick={() => setDarkMode(!darkMode)}
