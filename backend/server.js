@@ -100,9 +100,80 @@ app.post("/login", async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({
       message: "Login failed",
+       });
+      }
+    });
+    app.put("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        message: "Authorization token required",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "expense_tracker_secret"
+    );
+
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({
+        message: "Name and email are required",
+      });
+    }
+
+    const existingUser = await User.findOne({
+      email,
+      _id: { $ne: decoded.userId },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already registered",
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      decoded.userId,
+      { name, email },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Profile update error:", error);
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        message: "Invalid or expired token",
+      });
+    }
+
+    res.status(500).json({
+      message: "Profile update failed",
     });
   }
 });
+  
 // Get all expenses
 app.get("/expenses", async (req, res) => {
   try {
